@@ -1,0 +1,6 @@
+1|Ravi Kumar|30|O+|9876543210|Kochi|1|0
+2|Anita Sharma|28|A+|9876500000|Kochi|0|0
+3|Suresh Menon|35|O-|9876511111|Ernakulam|1|0
+4|Divya Pillai|26|B+|9876522222|Kochi|1|0
+5|Arjun Nair|40|AB+|9876533333|Thrissur|1|0
+6|Meera Das|22|O+|9876544444|Kochi|1|0

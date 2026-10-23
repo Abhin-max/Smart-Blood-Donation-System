@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart Blood Donation Emergency Matching System</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><path d=%22M12 2C12 2 5 10.5 5 15a7 7 0 0014 0c0-4.5-7-13-7-13z%22 fill=%22%23B3122E%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F6F5;
+    --surface:#FFFFFF;
+    --ink:#1A1B1E;
+    --muted:#6B7280;
+    --line:#E4E4E2;
+    --red:#B3122E;
+    --red-dark:#8A0E23;
+    --red-light:#D93B57;
+    --red-tint:#FCEBEE;
+    --teal:#0C7C86;
+    --teal-tint:#E3F3F4;
+    --amber:#C97A1F;
+    --amber-tint:#FBEEDD;
+    --radius:12px;
+    --shadow-sm:0 1px 2px rgba(20,20,20,0.05);
+    --shadow-md:0 4px 14px rgba(20,20,20,0.06), 0 1px 3px rgba(20,20,20,0.04);
+    --shadow-lg:0 12px 32px rgba(179,18,46,0.10), 0 2px 8px rgba(20,20,20,0.05);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:-0.01em;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  a{color:inherit;}
+  ::selection{background:var(--red-tint);color:var(--red-dark);}
+
+  /* reveal-on-scroll */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;background:rgba(246,246,245,0.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);transition:box-shadow .25s;}
+  nav.scrolled{box-shadow:0 2px 12px rgba(20,20,20,0.05);}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px;}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14.5px;}
+  .brand .dropicon{width:22px;height:22px;flex:none;}
+  .navlinks{display:flex;gap:26px;font-size:13.5px;color:var(--muted);}
+  .navlinks a{text-decoration:none;position:relative;padding:4px 0;}
+  .navlinks a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--red);transform:scaleX(0);transition:transform .2s;}
+  .navlinks a:hover{color:var(--ink);}
+  .navlinks a:hover::after{transform:scaleX(1);}
+  @media (max-width:680px){.navlinks{display:none;}}
+
+  /* HERO */
+  .hero{position:relative;padding:76px 0 40px;overflow:hidden;}
+  .hero::before{
+    content:"";position:absolute;inset:0;z-index:0;
+    background:
+      radial-gradient(560px 320px at 82% -10%, rgba(179,18,46,0.09), transparent 60%),
+      radial-gradient(420px 260px at 8% 0%, rgba(12,124,134,0.07), transparent 60%);
+  }
+  .hero::after{
+    content:"";position:absolute;inset:0;z-index:0;opacity:0.5;
+    background-image:radial-gradient(circle, rgba(20,20,20,0.055) 1px, transparent 1px);
+    background-size:22px 22px;
+    -webkit-mask-image:linear-gradient(to bottom, black, transparent 85%);
+    mask-image:linear-gradient(to bottom, black, transparent 85%);
+  }
+  .hero .wrap{position:relative;z-index:1;}
+  .hero-grid{display:grid;grid-template-columns:1.15fr 0.85fr;gap:32px;align-items:center;}
+  @media (max-width:820px){.hero-grid{grid-template-columns:1fr;}}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.05em;color:var(--red);background:var(--red-tint);padding:5px 12px 5px 9px;border-radius:100px;margin-bottom:18px;border:1px solid rgba(179,18,46,0.14);}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse-dot 1.6s infinite;}
+  @keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(179,18,46,0.4);}50%{opacity:.5;box-shadow:0 0 0 4px rgba(179,18,46,0);}}
+
+  .hero h1{font-size:40px;line-height:1.14;margin:0 0 16px;}
+  .hero h1 .accent{background:linear-gradient(100deg, var(--red) 10%, var(--red-light) 60%, var(--red) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p.lede{font-size:16px;color:var(--muted);max-width:520px;margin:0 0 26px;}
+  .btn{font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;padding:11px 20px;border-radius:9px;border:1px solid transparent;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform .15s, box-shadow .15s, background .15s;}
+  .btn svg{width:15px;height:15px;}
+  .btn-primary{background:var(--red);color:#fff;box-shadow:0 4px 14px rgba(179,18,46,0.28);}
+  .btn-primary:hover{background:var(--red-dark);transform:translateY(-1px);box-shadow:0 8px 20px rgba(179,18,46,0.34);}
+  .btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--line);}
+  .btn-ghost:hover{border-color:var(--ink);transform:translateY(-1px);}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px;}
+
+  /* hero visual */
+  .hero-visual{position:relative;display:flex;align-items:center;justify-content:center;}
+  .drop-orbit{position:relative;width:280px;height:280px;}
+  .drop-core{
+    position:absolute;inset:0;margin:auto;width:120px;height:140px;
+    filter:drop-shadow(0 14px 26px rgba(179,18,46,0.30));
+    animation:float 4.5s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+  .orbit-ring{position:absolute;border:1.5px dashed rgba(179,18,46,0.22);border-radius:50%;}
+  .ring1{inset:0;animation:spin 22s linear infinite;}
+  .ring2{inset:34px;animation:spin 16s linear infinite reverse;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  .orbit-node{position:absolute;width:11px;height:11px;border-radius:50%;background:var(--teal);box-shadow:0 0 0 4px var(--teal-tint);}
+  .n1{top:6%;left:48%;} .n2{top:48%;left:-2%;background:var(--amber);box-shadow:0 0 0 4px var(--amber-tint);} .n3{bottom:8%;right:2%;}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+  .stat{background:var(--surface);padding:18px 20px;transition:background .2s;}
+  .stat:hover{background:#FCFCFB;}
+  .stat .num{font-family:'IBM Plex Mono',monospace;font-size:23px;font-weight:600;}
+  .stat .label{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  @media (max-width:680px){.stats{grid-template-columns:repeat(2,1fr);}}
+
+  section{padding:56px 0;}
+  .section-head{margin-bottom:30px;max-width:640px;}
+  .section-tag{display:inline-flex;align-items:center;gap:6px;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--red);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px;}
+  .section-tag::before{content:"";width:14px;height:1.5px;background:var(--red);}
+  .section-head h2{font-size:26px;margin:0 0 9px;}
+  .section-head p{color:var(--muted);font-size:14.5px;margin:0;}
+
+  /* ARCHITECTURE */
+  .dsa-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media (max-width:680px){.dsa-grid{grid-template-columns:1fr;}}
+  .dsa-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .2s, box-shadow .2s, border-color .2s;}
+  .dsa-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:#D8D8D5;}
+  .dsa-card::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg, var(--red), var(--teal));opacity:0;transition:opacity .2s;}
+  .dsa-card:hover::before{opacity:1;}
+  .dsa-card .icon-wrap{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .icon-wrap.a{background:var(--teal-tint);color:var(--teal);}
+  .icon-wrap.b{background:var(--red-tint);color:var(--red);}
+  .dsa-card .icon-wrap svg{width:18px;height:18px;}
+  .dsa-card .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);display:block;margin-bottom:4px;}
+  .dsa-card h3{font-size:15.5px;margin:0 0 7px;}
+  .dsa-card p{font-size:13px;color:var(--muted);margin:0 0 12px;}
+  .dsa-card .complexity{font-family:'IBM Plex Mono',monospace;font-size:11.5px;border-top:1px solid var(--line);padding-top:10px;display:flex;align-items:center;gap:6px;color:var(--ink);}
+  .dsa-card .complexity svg{width:12px;height:12px;color:var(--red);}
+
+  .callout{background:linear-gradient(135deg, #fff, #FEF7F8);border:1px solid rgba(179,18,46,0.22);border-radius:var(--radius);padding:22px 24px;margin-top:16px;box-shadow:var(--shadow-sm);display:flex;gap:16px;align-items:flex-start;}
+  .callout .bolt{flex:none;width:38px;height:38px;border-radius:10px;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(179,18,46,0.3);}
+  .callout .bolt svg{width:19px;height:19px;}
+  .callout .tag{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--red);font-weight:600;letter-spacing:.03em;display:block;margin-bottom:6px;text-transform:uppercase;}
+  .callout p{font-size:13.5px;color:var(--ink);margin:0;line-height:1.65;}
+
+  /* DEMO SHELL */
+  .demo-shell{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg);}
+  .tabbar{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#FBFBFA,#F7F7F6);}
+  .tabbtn{display:flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;font-weight:600;font-size:13px;padding:14px 17px;border:none;background:none;cursor:pointer;color:var(--muted);border-bottom:2.5px solid transparent;transition:color .15s, border-color .15s;}
+  .tabbtn svg{width:14px;height:14px;}
+  .tabbtn:hover{color:var(--ink);}
+  .tabbtn.active{color:var(--red);border-bottom-color:var(--red);}
+  .tabpanel{display:none;padding:24px;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+  .tabpanel.active{display:block;}
+
+  form.f{display:flex;flex-direction:column;gap:9px;margin-bottom:18px;padding:16px;background:#FBFBFA;border:1px solid var(--line);border-radius:11px;}
+  form.f .row{display:flex;gap:9px;flex-wrap:wrap;}
+  form.f input, form.f select{flex:1;min-width:110px;font-family:'Inter',sans-serif;font-size:13px;padding:9px 11px;border:1px solid var(--line);border-radius:7px;background:#fff;transition:border-color .15s, box-shadow .15s;}
+  form.f input:focus, form.f select:focus{outline:none;border-color:var(--red);box-shadow:0 0 0 3px var(--red-tint);}
+  .btn-sm{font-family:'Inter',sans-serif;font-size:12.5px;font-weight:600;padding:9px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;transition:transform .12s, box-shadow .12s;}
+  .btn-sm:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);}
+  .btn-sm.primary{background:var(--red);border-color:var(--red);color:#fff;}
+  .btn-sm.primary:hover{background:var(--red-dark);}
+
+  table.data-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px;}
+  table.data-table th, table.data-table td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line);}
+  table.data-table th{font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em;}
+  table.data-table tbody tr{transition:background .15s;}
+  table.data-table tbody tr:hover{background:#FAFAF9;}
+  .pill{font-family:'IBM Plex Mono',monospace;font-size:10.5px;padding:3px 8px;border-radius:100px;font-weight:600;}
+  .pill.avail{background:var(--teal-tint);color:var(--teal);}
+  .pill.unavail{background:#EFEFED;color:var(--muted);}
+  .pill.crit{background:var(--red-tint);color:var(--red);}
+  .pill.mod{background:var(--amber-tint);color:var(--amber);}
+  .pill.low{background:#EFEFED;color:var(--muted);}
+
+  .empty-hint{font-size:13px;color:var(--muted);font-style:italic;}
+  .log-line{display:flex;align-items:center;gap:8px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted);padding:12px 24px;border-top:1px solid var(--line);background:linear-gradient(180deg,#FBFBFA,#F7F7F6);min-height:20px;}
+  .log-line .ledi{width:7px;height:7px;border-radius:50%;background:var(--teal);flex:none;box-shadow:0 0 0 3px var(--teal-tint);}
+  .log-line b{color:var(--ink);}
+
+  /* CODE */
+  .code-tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .code-tab{font-family:'IBM Plex Mono',monospace;font-size:11.5px;padding:7px 12px;border-radius:7px;border:1px solid var(--line);background:#fff;cursor:pointer;color:var(--muted);transition:all .15s;}
+  .code-tab:hover{border-color:var(--ink);color:var(--ink);}
+  .code-tab.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .code-window{border-radius:12px;overflow:hidden;box-shadow:var(--shadow-lg);}
+  .code-titlebar{background:#22242A;padding:11px 16px;display:flex;align-items:center;gap:7px;}
+  .code-titlebar span{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .code-titlebar .r{background:#EE6A5F;} .code-titlebar .y{background:#F5BD4F;} .code-titlebar .g{background:#61C554;}
+  .code-block{background:#1A1B1E;color:#E7EAED;padding:20px 22px;font-family:'IBM Plex Mono',monospace;font-size:12.5px;line-height:1.7;overflow:auto;max-height:380px;}
+  .code-block .kw{color:#F5A3B0;} .code-block .tp{color:#7FD1C1;} .code-block .cm{color:#7C8792;font-style:italic;} .code-block .fn{color:#8EC7FF;}
+  pre{margin:0;white-space:pre;}
+
+  table.complexity{width:100%;border-collapse:collapse;font-size:13.5px;}
+  table.complexity th, table.complexity td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line);}
+  table.complexity th{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em;}
+  table.complexity tbody tr{transition:background .15s;}
+  table.complexity tbody tr:hover{background:#FAFAF9;}
+  td.big-o{font-family:'IBM Plex Mono',monospace;color:var(--red);font-weight:600;}
+  .table-wrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);}
+
+  .qa{border:1px solid var(--line);border-radius:11px;background:var(--surface);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow-sm);transition:border-color .15s;}
+  .qa:hover{border-color:#D8D8D5;}
+  .qa summary{list-style:none;cursor:pointer;padding:15px 18px;font-weight:600;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .qa summary::-webkit-details-marker{display:none;}
+  .qa summary::after{content:"+";color:var(--muted);font-family:'IBM Plex Mono',monospace;font-size:16px;flex:none;transition:transform .2s;}
+  .qa[open] summary::after{content:"\2212";color:var(--red);}
+  .qa .a{padding:0 18px 16px;color:var(--muted);font-size:13px;line-height:1.6;}
+
+  .howto{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow-sm);}
+  .howto ol{margin:0;padding-left:20px;font-size:13.5px;color:var(--ink);}
+  .howto li{margin-bottom:10px;}
+  .howto code{background:var(--red-tint);color:var(--red-dark);padding:2px 7px;border-radius:5px;font-family:'IBM Plex Mono',monospace;font-size:12px;}
+
+  footer{border-top:1px solid var(--line);padding:32px 0;color:var(--muted);font-size:12.5px;background:linear-gradient(180deg,transparent,#F0F0EE);}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center;}
+  footer .fbrand{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600;}
+  footer .fbrand svg{width:16px;height:16px;}
+</style>
+</head>
+<body>
+
+<nav id="mainNav">
+  <div class="wrap">
+    <div class="brand">
+      <svg class="dropicon" viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0014 0c0-4.5-7-13-7-13z" fill="#B3122E"/><path d="M9 15a3 3 0 003 3" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>
+      Smart Blood Donation System
+    </div>
+    <div class="navlinks">
+      <a href="#demo">Live Demo</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#code">Code</a>
+      <a href="#viva">Viva Prep</a>
+      <a href="#howto">Run in VS Code</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow reveal"><span class="dot"></span> C++ CONSOLE APPLICATION · COLLEGE DSA MINI PROJECT</div>
+        <h1 class="reveal">Smart Blood Donation<br><span class="accent">Emergency Matching</span> System</h1>
+        <p class="lede reveal">A console application that manages blood donors and performs emergency donor matching — built on four purpose-picked data structures. This page is an interactive companion for demonstrating it, running the exact same logic as the real C++ code.</p>
+        <div class="hero-cta reveal">
+          <a href="#demo" class="btn btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Open Live Demo
+          </a>
+          <a href="#architecture" class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            See the Architecture
+          </a>
+        </div>
+      </div>
+      <div class="hero-visual reveal">
+        <div class="drop-orbit">
+          <div class="orbit-ring ring1"></div>
+          <div class="orbit-ring ring2"></div>
+          <div class="orbit-node n1"></div>
+          <div class="orbit-node n2"></div>
+          <div class="orbit-node n3"></div>
+          <svg class="drop-core" viewBox="0 0 120 140" fill="none">
+            <defs>
+              <linearGradient id="dropgrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#D93B57"/>
+                <stop offset="100%" stop-color="#8A0E23"/>
+              </linearGradient>
+            </defs>
+            <path d="M60 4C60 4 12 62 12 92a48 48 0 0096 0C108 62 60 4 60 4z" fill="url(#dropgrad)"/>
+            <path d="M38 92a22 22 0 0022 22" stroke="rgba(255,255,255,0.55)" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats reveal">
+      <div class="stat"><div class="num mono" data-count="4">0</div><div class="label">Core data structures</div></div>
+      <div class="stat"><div class="num mono" data-static="O(1)">O(1)</div><div class="label">Donor ID lookup</div></div>
+      <div class="stat"><div class="num mono" data-static="O(log n)">O(log n)</div><div class="label">Request prioritization</div></div>
+      <div class="stat"><div class="num mono" data-count="10">0</div><div class="label">Source files</div></div>
+    </div>
+  </div>
+</header>
+
+<section id="architecture">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Architecture</div>
+      <h2>Four structures, four specific jobs</h2>
+      <p>Each one was chosen for a reason — nothing is used just to pad the requirement list.</p>
+    </div>
+    <div class="dsa-grid reveal">
+      <div class="dsa-card">
+        <div class="icon-wrap a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="4" rx="1"/><rect x="3" y="14" width="12" height="4" rx="1"/></svg></div>
+        <span class="tag">vector&lt;Donor&gt;</span>
+        <h3>Donor storage</h3>
+        <p>The master record store, in the order donors were registered. Every donor's array position never changes once assigned.</p>
+        <div class="complexity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>Register → O(1) amortized</div>
+      </div>
+      <div class="dsa-card">
+        <div class="icon-wrap a"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><path d="M8.5 10.5L15.5 7M8.5 13.5L15.5 17"/></svg></div>
+        <span class="tag">unordered_map&lt;string, vector&lt;int&gt;&gt;</span>
+        <h3>Blood group index</h3>
+        <p>Maps each blood group to the array positions of donors with that group, so a search only touches donors that could match.</p>
+        <div class="complexity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>Bucket lookup → O(1) avg, scan → O(k)</div>
+      </div>
+      <div class="dsa-card">
+        <div class="icon-wrap b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg></div>
+        <span class="tag">priority_queue&lt;BloodRequest&gt;</span>
+        <h3>Blood request queue</h3>
+        <p>A binary heap. "View Requests" always shows the most urgent request first, no matter what order they were added in.</p>
+        <div class="complexity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>Push → O(log n)</div>
+      </div>
+      <div class="dsa-card">
+        <div class="icon-wrap b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><path d="M7 12h3M14 12h3"/></svg></div>
+        <span class="tag">list&lt;DonationRecord&gt;</span>
+        <h3>Donation history</h3>
+        <p>Append-only log, always read front-to-back. A linked list skips the reallocation cost a vector pays as it grows.</p>
+        <div class="complexity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg>Append → O(1)</div>
+      </div>
+    </div>
+    <div class="callout reveal">
+      <div class="bolt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z"/></svg></div>
+      <div>
+        <span class="tag">Key design decision</span>
+        <p><b>Search by Donor ID is O(1) without a second hash map.</b> IDs are assigned sequentially, and "Delete Donor" never physically removes a record — it just flags it as deleted ("soft delete"). That means donor ID <span class="mono">N</span> is always at vector position <span class="mono">N‑1</span>, forever. So ID lookup is direct array access, not a search at all.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Live Demo</div>
+      <h2>The same logic, running here</h2>
+      <p>Each tab below mirrors a menu in the real console app. Try registering a donor, adding a request, then running Emergency Matching.</p>
+    </div>
+
+    <div class="demo-shell reveal">
+      <div class="tabbar" id="tabbar">
+        <button class="tabbtn active" data-tab="donors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0116 0v1"/></svg>Donor Management</button>
+        <button class="tabbtn" data-tab="requests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg>Blood Request</button>
+        <button class="tabbtn" data-tab="matching"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 5.5 5.5 5.5 0 0121.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>Emergency Matching</button>
+        <button class="tabbtn" data-tab="history"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>Donation History</button>
+        <button class="tabbtn" data-tab="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>Reports</button>
+      </div>
+
+      <!-- Donor Management -->
+      <div class="tabpanel active" id="panel-donors">
+        <form class="f" id="donorForm">
+          <div class="row">
+            <input id="d_name" placeholder="Name" required>
+            <input id="d_age" placeholder="Age" type="number" min="18" max="65" required style="max-width:80px;">
+            <select id="d_bg">
+              <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+            </select>
+          </div>
+          <div class="row">
+            <input id="d_city" placeholder="City" required>
+            <input id="d_phone" placeholder="Phone" required>
+            <button type="submit" class="btn-sm primary">Register Donor</button>
+          </div>
+        </form>
+
+        <div class="row" style="margin-bottom:10px;gap:8px;">
+          <input id="searchBg" placeholder="Search blood group e.g. A+" style="flex:1;padding:9px 11px;border:1px solid var(--line);border-radius:7px;font-size:13px;">
+          <button class="btn-sm" onclick="renderDonors()">View All</button>
+          <button class="btn-sm" onclick="searchByGroup()">Search Group</button>
+        </div>
+
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Group</th><th>City</th><th>Status</th><th></th></tr></thead>
+          <tbody id="donorTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Blood Request -->
+      <div class="tabpanel" id="panel-requests">
+        <form class="f" id="requestForm">
+          <div class="row">
+            <input id="r_name" placeholder="Patient name" required>
+            <select id="r_bg">
+              <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+            </select>
+            <input id="r_units" placeholder="Units" type="number" min="1" max="5" value="1" style="max-width:70px;">
+          </div>
+          <div class="row">
+            <select id="r_level">
+              <option value="1">CRITICAL</option>
+              <option value="2">MODERATE</option>
+              <option value="3">LOW</option>
+            </select>
+            <button type="submit" class="btn-sm primary">Add Request</button>
+          </div>
+        </form>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 10px;">Requests below are shown in priority order (most urgent first) — exactly what <span class="mono">viewRequests()</span> does by draining and restoring the heap.</p>
+        <table class="data-table">
+          <thead><tr><th>Req #</th><th>Patient</th><th>Group</th><th>Units</th><th>Urgency</th></tr></thead>
+          <tbody id="requestTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Emergency Matching -->
+      <div class="tabpanel" id="panel-matching">
+        <form class="f" id="matchForm">
+          <div class="row">
+            <select id="m_bg">
+              <option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+              <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option>
+            </select>
+            <input id="m_patient" placeholder="Patient name" required>
+            <input id="m_units" placeholder="Units" type="number" min="1" max="5" value="1" style="max-width:70px;">
+          </div>
+          <button type="submit" class="btn-sm primary">Find &amp; Match Donor</button>
+        </form>
+        <p style="font-size:12.5px;color:var(--muted);">This is an immediate action — it does <b>not</b> pull from the request queue above. It searches the blood-group index directly and assigns the first available donor.</p>
+      </div>
+
+      <!-- History -->
+      <div class="tabpanel" id="panel-history">
+        <table class="data-table">
+          <thead><tr><th>Donor</th><th>Patient</th><th>Group</th><th>Units</th></tr></thead>
+          <tbody id="historyTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Reports -->
+      <div class="tabpanel" id="panel-reports">
+        <div class="stats" style="margin-bottom:16px;">
+          <div class="stat"><div class="num mono" id="rep_total">0</div><div class="label">Total Donors</div></div>
+          <div class="stat"><div class="num mono" id="rep_avail">0</div><div class="label">Available Donors</div></div>
+          <div class="stat"><div class="num mono" id="rep_requests">0</div><div class="label">Pending Requests</div></div>
+          <div class="stat"><div class="num mono" id="rep_donations">0</div><div class="label">Completed Donations</div></div>
+        </div>
+        <h3 style="font-size:14px;">Blood Group Wise Count</h3>
+        <table class="data-table"><thead><tr><th>Group</th><th>Count</th></tr></thead><tbody id="reportGroupBody"></tbody></table>
+      </div>
+
+      <div class="log-line"><span class="ledi"></span><span id="logLine">Ready. Registering a donor or adding a request will show a status line here.</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="code">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Code Walkthrough</div>
+      <h2>The functions the demo above mirrors</h2>
+    </div>
+    <div class="code-tabs reveal">
+      <button class="code-tab active" onclick="showCode(0,this)">DonorManager::getDonorById</button>
+      <button class="code-tab" onclick="showCode(1,this)">CompareRequest</button>
+      <button class="code-tab" onclick="showCode(2,this)">RequestManager::matchDonor</button>
+    </div>
+    <div class="code-window reveal">
+      <div class="code-titlebar"><span class="r"></span><span class="y"></span><span class="g"></span></div>
+      <div class="code-block"><pre id="codeBlock"></pre></div>
+    </div>
+  </div>
+</section>
+
+<section id="complexity">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Complexity</div>
+      <h2>Every operation, accounted for</h2>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="complexity">
+        <thead><tr><th>Operation</th><th>Complexity</th></tr></thead>
+        <tbody>
+          <tr><td>Register donor</td><td class="big-o">O(1) amortized</td></tr>
+          <tr><td>Search by ID</td><td class="big-o">O(1)</td></tr>
+          <tr><td>Search by blood group</td><td class="big-o">O(k)</td></tr>
+          <tr><td>Update / Delete donor</td><td class="big-o">O(1)</td></tr>
+          <tr><td>Add blood request</td><td class="big-o">O(log n)</td></tr>
+          <tr><td>View requests</td><td class="big-o">O(n log n)</td></tr>
+          <tr><td>Emergency Matching</td><td class="big-o">O(1) + O(k)</td></tr>
+          <tr><td>Add history record</td><td class="big-o">O(1)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="viva">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Viva Preparation</div>
+      <h2>Quick answers to have ready</h2>
+    </div>
+    <div class="reveal">
+    <details class="qa" open>
+      <summary>Why unordered_map instead of map?</summary>
+      <div class="a">map keeps keys sorted using a tree — O(log n). We never need sorted blood groups, so unordered_map's average O(1) hashing is the better fit.</div>
+    </details>
+    <details class="qa">
+      <summary>Why is ID search O(1) without a hash map?</summary>
+      <div class="a">Donor IDs are sequential and donors are soft-deleted, never physically removed — so donor ID N always sits at vector position N-1. Direct array access, no search needed.</div>
+    </details>
+    <details class="qa">
+      <summary>Why priority_queue for requests?</summary>
+      <div class="a">Emergency requests must be served by urgency, not arrival order. A binary heap gives O(log n) insert and always keeps the most urgent request accessible in O(1).</div>
+    </details>
+    <details class="qa">
+      <summary>Why doesn't Emergency Matching use the request queue?</summary>
+      <div class="a">They're deliberately separate: the queue is a prioritized record for tracking, while Emergency Matching is an immediate, on-the-spot lookup. Keeping them apart means each data structure has exactly one clear job.</div>
+    </details>
+    <details class="qa">
+      <summary>Why list for donation history?</summary>
+      <div class="a">History is append-only and read front-to-back, never randomly accessed — list avoids the reallocation cost a vector pays as it grows.</div>
+    </details>
+    </div>
+  </div>
+</section>
+
+<section id="howto">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-tag">Run in VS Code</div>
+      <h2>Presenting this page alongside the console app</h2>
+    </div>
+    <div class="howto reveal">
+      <ol>
+        <li>Open the <code>web-showcase</code> folder (or the whole project folder) in VS Code.</li>
+        <li>Install the <b>Live Server</b> extension (by Ritwick Dey) from the Extensions panel, if not already installed.</li>
+        <li>Right-click <code>index.html</code> → <b>Open with Live Server</b>. It opens in your browser and auto-refreshes on save.</li>
+        <li>No Live Server? Just double-click <code>index.html</code> to open it directly in any browser — it works standalone, no server needed.</li>
+        <li>For the demo: open this page in one window and a terminal running the real C++ app in another (or a split screen) — show the same action (e.g. registering a donor) in both, side by side.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C12 2 5 10.5 5 15a7 7 0 0014 0c0-4.5-7-13-7-13z" fill="#B3122E"/></svg>
+      Smart Blood Donation Emergency Matching System
+    </div>
+    <div class="mono">C++17 · vector · unordered_map · priority_queue · list</div>
+  </div>
+</footer>
+
+<script>
+// ============================================================
+// Mirrors DonorManager + RequestManager exactly:
+// - donor ID = array position + 1 (soft delete, never re-indexed)
+// - blood group search = filter by field (represents the hash bucket)
+// - requests displayed in priority order (urgency asc, then arrival order)
+// - Emergency Matching is a separate immediate action, same as the C++ version
+// ============================================================
+
+let donors = [];        // {id, name, age, bg, city, phone, available, deleted}
+let requests = [];      // {id, patient, bg, units, level, arrival}
+let history = [];       // {donorId, donorName, patient, bg, units}
+let arrivalCounter = 0;
+let requestIdCounter = 1;
+let currentGroupFilter = null;
+
+const SEED_DONORS = [
+  {name:"Ravi Kumar", age:30, bg:"O+", city:"Kochi", phone:"9876543210"},
+  {name:"Anita Sharma", age:28, bg:"A+", city:"Kochi", phone:"9876500000"},
+  {name:"Suresh Menon", age:35, bg:"O-", city:"Ernakulam", phone:"9876511111"},
+  {name:"Divya Pillai", age:26, bg:"B+", city:"Kochi", phone:"9876522222"},
+  {name:"Arjun Nair", age:40, bg:"AB+", city:"Thrissur", phone:"9876533333"},
+  {name:"Meera Das", age:22, bg:"O+", city:"Kochi", phone:"9876544444"},
+];
+const SEED_REQUESTS = [
+  {patient:"Rahul Verma", bg:"A+", units:2, level:1},
+  {patient:"Kiran Raj", bg:"B+", units:1, level:3},
+];
+
+function log(msg){ document.getElementById('logLine').innerHTML = msg; }
+
+// ---------- Donor Management ----------
+function registerDonor(name, age, bg, phone, city){
+  const id = donors.length + 1; // sequential — id always equals position+1
+  donors.push({id, name, age, bg, city, phone, available:true, deleted:false});
+}
+
+function getDonorById(id){
+  const pos = id - 1;
+  if (pos < 0 || pos >= donors.length) return null;
+  if (donors[pos].deleted) return null;
+  return donors[pos];
+}
+
+function findAvailableDonor(bg){
+  return donors.find(d => d.bg === bg && d.available && !d.deleted) || null;
+}
+
+document.getElementById('donorForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = document.getElementById('d_name').value.trim();
+  const age = document.getElementById('d_age').value;
+  const bg = document.getElementById('d_bg').value;
+  const city = document.getElementById('d_city').value.trim();
+  const phone = document.getElementById('d_phone').value.trim();
+  if(!name || !city || !phone) return;
+  registerDonor(name, age, bg, phone, city);
+  log(`Registered donor "${name}" (${bg}) — ID #${donors.length}.`);
+  this.reset();
+  currentGroupFilter = null;
+  renderDonors();
+});
+
+function searchByGroup(){
+  const bg = document.getElementById('searchBg').value.trim();
+  if(!bg){ currentGroupFilter = null; renderDonors(); return; }
+  currentGroupFilter = bg;
+  renderDonors();
+  log(`Searched blood group "${bg}".`);
+}
+
+function toggleDelete(id){
+  const d = getDonorById(id);
+  if(!d) return;
+  d.deleted = true;
+  d.available = false;
+  log(`Donor #${id} (${d.name}) deleted (soft delete — flag set, record kept in place).`);
+  renderDonors();
+}
+
+function renderDonors(){
+  const body = document.getElementById('donorTableBody');
+  let list = donors.filter(d => !d.deleted);
+  if(currentGroupFilter) list = list.filter(d => d.bg === currentGroupFilter);
+  if(list.length===0){ body.innerHTML = '<tr><td colspan="7" class="empty-hint">No donors found.</td></tr>'; return; }
+  body.innerHTML = list.map(d => `
+    <tr>
+      <td class="mono">${d.id}</td><td>${d.name}</td><td>${d.age}</td><td>${d.bg}</td><td>${d.city}</td>
+      <td><span class="pill ${d.available?'avail':'unavail'}">${d.available?'Available':'Unavailable'}</span></td>
+      <td><button class="btn-sm" onclick="toggleDelete(${d.id})">Delete</button></td>
+    </tr>`).join('');
+}
+
+// ---------- Blood Request ----------
+document.getElementById('requestForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const patient = document.getElementById('r_name').value.trim();
+  const bg = document.getElementById('r_bg').value;
+  const units = parseInt(document.getElementById('r_units').value)||1;
+  const level = parseInt(document.getElementById('r_level').value);
+  if(!patient) return;
+  requests.push({id:requestIdCounter++, patient, bg, units, level, arrival:arrivalCounter++});
+  log(`Added request #${requestIdCounter-1} for ${patient} (${bg}, ${levelLabel(level)}).`);
+  this.reset();
+  renderRequests();
+});
+
+function levelLabel(l){ return l===1?"CRITICAL":l===2?"MODERATE":"LOW"; }
+function levelClass(l){ return l===1?"crit":l===2?"mod":"low"; }
+
+function renderRequests(){
+  const body = document.getElementById('requestTableBody');
+  if(requests.length===0){ body.innerHTML = '<tr><td colspan="5" class="empty-hint">No requests yet.</td></tr>'; return; }
+  const ordered = [...requests].sort((a,b)=> a.level!==b.level ? a.level-b.level : a.arrival-b.arrival);
+  body.innerHTML = ordered.map(r=>`
+    <tr>
+      <td class="mono">#${r.id}</td><td>${r.patient}</td><td>${r.bg}</td><td>${r.units}</td>
+      <td><span class="pill ${levelClass(r.level)}">${levelLabel(r.level)}</span></td>
+    </tr>`).join('');
+}
+
+// ---------- Emergency Matching ----------
+document.getElementById('matchForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  const bg = document.getElementById('m_bg').value;
+  const patient = document.getElementById('m_patient').value.trim();
+  const units = parseInt(document.getElementById('m_units').value)||1;
+  if(!patient) return;
+  const donor = findAvailableDonor(bg);
+  if(donor){
+    donor.available = false;
+    history.push({donorId:donor.id, donorName:donor.name, patient, bg, units});
+    log(`Matched! Donor #${donor.id} (${donor.name}) assigned to ${patient}.`);
+  } else {
+    log(`No available donor found for blood group ${bg}.`);
+  }
+  this.reset();
+  renderDonors(); renderHistory(); renderReports();
+});
+
+// ---------- History ----------
+function renderHistory(){
+  const body = document.getElementById('historyTableBody');
+  if(history.length===0){ body.innerHTML = '<tr><td colspan="4" class="empty-hint">No completed donations yet.</td></tr>'; return; }
+  body.innerHTML = history.map(h=>`
+    <tr><td>#${h.donorId} ${h.donorName}</td><td>${h.patient}</td><td>${h.bg}</td><td>${h.units}</td></tr>
+  `).join('');
+}
+
+// ---------- Reports ----------
+function renderReports(){
+  const active = donors.filter(d=>!d.deleted);
+  document.getElementById('rep_total').textContent = active.length;
+  document.getElementById('rep_avail').textContent = active.filter(d=>d.available).length;
+  document.getElementById('rep_requests').textContent = requests.length;
+  document.getElementById('rep_donations').textContent = history.length;
+
+  const counts = {};
+  active.forEach(d=>{ counts[d.bg] = (counts[d.bg]||0)+1; });
+  const body = document.getElementById('reportGroupBody');
+  const groups = Object.keys(counts);
+  body.innerHTML = groups.length ? groups.map(g=>`<tr><td>${g}</td><td>${counts[g]}</td></tr>`).join('')
+                                   : '<tr><td colspan="2" class="empty-hint">No donors yet.</td></tr>';
+}
+
+// ---------- Tabs ----------
+document.getElementById('tabbar').addEventListener('click', function(e){
+  const btn = e.target.closest('.tabbtn');
+  if(!btn) return;
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+});
+
+// ---------- Code tabs ----------
+const CODE_SNIPPETS = [
+`<span class="cm">// Donor ID N is always at vector position N-1, because IDs are</span>
+<span class="cm">// sequential and donors are soft-deleted (never physically erased).</span>
+<span class="kw">bool</span> <span class="tp">DonorManager</span>::<span class="fn">getDonorById</span>(<span class="kw">int</span> id, <span class="tp">Donor</span> &out) <span class="kw">const</span> {
+    <span class="kw">int</span> pos = id - <span class="kw">1</span>;
+    <span class="kw">if</span> (pos < <span class="kw">0</span> || pos >= (<span class="kw">int</span>)donors.size()) <span class="kw">return</span> <span class="kw">false</span>;
+    <span class="kw">if</span> (donors[pos].isDeleted()) <span class="kw">return</span> <span class="kw">false</span>;
+    out = donors[pos];
+    <span class="kw">return</span> <span class="kw">true</span>; <span class="cm">// O(1) — direct array access</span>
+}`,
+`<span class="cm">// std::priority_queue is a MAX-heap by default. Urgency 1 (CRITICAL)</span>
+<span class="cm">// must outrank urgency 3 (LOW), so this comparator inverts the logic.</span>
+<span class="kw">struct</span> <span class="tp">CompareRequest</span> {
+    <span class="kw">bool</span> <span class="fn">operator()</span>(<span class="kw">const</span> <span class="tp">BloodRequest</span> &a, <span class="kw">const</span> <span class="tp">BloodRequest</span> &b) <span class="kw">const</span> {
+        <span class="kw">if</span> (a.getUrgencyLevel() != b.getUrgencyLevel())
+            <span class="kw">return</span> a.getUrgencyLevel() > b.getUrgencyLevel();
+        <span class="kw">return</span> a.getArrivalOrder() > b.getArrivalOrder();
+    }
+};`,
+`<span class="cm">// Emergency Matching: an immediate lookup, separate from the request queue.</span>
+<span class="kw">bool</span> <span class="tp">RequestManager</span>::<span class="fn">matchDonor</span>(<span class="kw">const</span> <span class="tp">string</span> &bloodGroup,
+                                 <span class="kw">const</span> <span class="tp">string</span> &patientName,
+                                 <span class="kw">int</span> units, <span class="kw">int</span> &donorId) {
+    donorId = donorManager.findAvailableDonor(bloodGroup);
+    <span class="kw">if</span> (donorId == -<span class="kw">1</span>) <span class="kw">return</span> <span class="kw">false</span>;
+
+    <span class="tp">Donor</span> d;
+    donorManager.getDonorById(donorId, d);
+    donorManager.markDonated(donorId);
+
+    history.push_back(<span class="tp">DonationRecord</span>(donorId, d.getName(), patientName, bloodGroup, units));
+    <span class="kw">return</span> <span class="kw">true</span>;
+}`
+];
+function showCode(i, btn){
+  document.getElementById('codeBlock').innerHTML = CODE_SNIPPETS[i];
+  document.querySelectorAll('.code-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+}
+showCode(0, document.querySelector('.code-tab'));
+
+// ---------- nav shadow on scroll ----------
+window.addEventListener('scroll', function(){
+  document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY > 8);
+});
+
+// ---------- scroll reveal ----------
+const revealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){ entry.target.classList.add('in'); revealObserver.unobserve(entry.target); }
+  });
+}, {threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+
+// ---------- stat count-up ----------
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const target = parseInt(el.dataset.count, 10);
+  let current = 0;
+  const step = Math.max(1, Math.round(target/24));
+  const timer = setInterval(()=>{
+    current += step;
+    if(current >= target){ current = target; clearInterval(timer); }
+    el.textContent = current;
+  }, 35);
+});
+
+// ---------- init ----------
+SEED_DONORS.forEach(d => registerDonor(d.name, d.age, d.bg, d.phone, d.city));
+SEED_REQUESTS.forEach(r => { requests.push({id:requestIdCounter++, patient:r.patient, bg:r.bg, units:r.units, level:r.level, arrival:arrivalCounter++}); });
+renderDonors(); renderRequests(); renderHistory(); renderReports();
+log("Seeded with sample data — matches the data/ folder in the real project.");
+</script>
+</body>
+</html>
